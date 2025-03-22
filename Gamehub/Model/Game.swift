@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Game: Decodable {
+struct Game: Decodable, Identifiable {
     let id: Int?
     let slug: String?
     let name: String?

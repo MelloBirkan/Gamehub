@@ -10,10 +10,10 @@ import Foundation
 struct DataService {
     let apiKey = Bundle.main.infoDictionary?["API_KEY"] as? String
     
-    func fetchGames(dates: String? = nil, platforms: String? = nil) async -> FetchedGameList? {
+    func fetchGames(dates: String? = nil, platforms: String? = nil) async -> [Game] {
         guard let apiKey else {
             print("API key not found in Info.plist")
-            return nil
+            return []
         }
         
         let endpoint = "https://api.rawg.io/api/games"
@@ -37,7 +37,7 @@ struct DataService {
         
         guard let url = components?.url else {
             print("Não foi possível criar a URL")
-            return nil
+            return []
         }
         
         do {
@@ -50,15 +50,15 @@ struct DataService {
             guard let httpResponse = response as? HTTPURLResponse, 
                   httpResponse.statusCode == 200 else {
                 print("Erro na resposta do servidor")
-                return nil
+                return []
             }
             
             let decoder = JSONDecoder()
             let result = try decoder.decode(FetchedGameList.self, from: data)
-            return result
+            return result.results
         } catch {
             print("Erro ao buscar jogos: \(error)")
-            return nil
+            return []
         }
     }
 }

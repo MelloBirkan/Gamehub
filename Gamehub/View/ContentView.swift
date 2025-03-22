@@ -8,22 +8,22 @@
 import SwiftUI
 
 struct ContentView: View {
-    let service = DataService()
+    @Environment(GamesViewModel.self) private var gamesViewModel
     
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        let games = gamesViewModel.games
+        
+        List(games) { game in
+            Text(game.name ?? "No games")
         }
         .padding()
-        .task {
-            await service.fetchGames()
+        .onAppear {
+            gamesViewModel.fetchGames()
         }
     }
 }
 
 #Preview {
     ContentView()
+        .environment(GamesViewModel())
 }

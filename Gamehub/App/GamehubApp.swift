@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct GamehubApp: App {
+    @State private var gamesViewModel = GamesViewModel()
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(gamesViewModel)
         }
     }
 }
