@@ -8,9 +8,57 @@
 import Foundation
 
 struct DataService {
-    let apiKey: String = Bundle.main.infoDictionary?["API_KEY"] as! String
+    let apiKey = Bundle.main.infoDictionary?["API_KEY"] as? String
     
-    func fetchGames() async -> FetchedGameList? {
-        return nil
+    func fetchGames(dates: String? = nil, platforms: String? = nil) async -> FetchedGameList? {
+        guard let apiKey else {
+            print("API key not found in Info.plist")
+            return nil
+        }
+        
+        let endpoint = "https://api.rawg.io/api/games"
+        
+        // Construir URL com a API key como parâmetro conforme documentação
+        var components = URLComponents(string: endpoint)
+        
+        // Iniciar com o item de consulta obrigatório (API key)
+        var queryItems = [URLQueryItem(name: "key", value: apiKey)]
+        
+        // Adicionar parâmetros opcionais se fornecidos
+        if let dates = dates {
+            queryItems.append(URLQueryItem(name: "dates", value: dates))
+        }
+        
+        if let platforms = platforms {
+            queryItems.append(URLQueryItem(name: "platforms", value: platforms))
+        }
+        
+        components?.queryItems = queryItems
+        
+        guard let url = components?.url else {
+            print("Não foi possível criar a URL")
+            return nil
+        }
+        
+        do {
+            var request = URLRequest(url: url)
+            request.httpMethod = "GET"
+            request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+            
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            guard let httpResponse = response as? HTTPURLResponse, 
+                  httpResponse.statusCode == 200 else {
+                print("Erro na resposta do servidor")
+                return nil
+            }
+            
+            let decoder = JSONDecoder()
+            let result = try decoder.decode(FetchedGameList.self, from: data)
+            return result
+        } catch {
+            print("Erro ao buscar jogos: \(error)")
+            return nil
+        }
     }
 }

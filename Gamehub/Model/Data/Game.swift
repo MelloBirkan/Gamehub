@@ -18,7 +18,7 @@ struct Game: Decodable {
     let ratingTop: Int?
     let ratings: [Rating]?
     let ratingsCount: Int?
-    let reviewsTextCount: String?
+    let reviewsTextCount: Int?
     let added: Int?
     let addedByStatus: AddedByStatus?
     let metacritic: Int?
