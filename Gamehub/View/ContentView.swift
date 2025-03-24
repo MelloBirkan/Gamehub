@@ -15,7 +15,7 @@ struct ContentView: View {
         let games = gamesViewModel.games
         
         NavigationStack {
-            VStack(spacing: 0) {
+            VStack {
                 searchBar
                 
                 ScrollView {
@@ -41,7 +41,11 @@ struct ContentView: View {
         HStack {
             Image(systemName: "magnifyingglass")
             
-            TextField("Search for a game", text: $query)
+            TextField("", text: $query)
+                .tint(.secondaryRed)
+                .placeholder("Search for a game", when: query.isEmpty) {
+                    Text("Search for a game").foregroundStyle(.secondaryRed)
+                }
         }
         .foregroundStyle(.secondaryRed)
         .padding(10)
@@ -116,7 +120,7 @@ struct GameCard: View {
                 
                 Spacer()
                 
-                HStack(spacing: 4) {
+                HStack(spacing: 1) {
                     ForEach(game.platformSymbols, id: \.self) { symbol in
                         Image(systemName: symbol)
                             .font(.caption2)
@@ -149,4 +153,19 @@ struct GameCard: View {
 #Preview {
     ContentView()
         .environment(GamesViewModel())
+}
+
+// Extensão para criar um modificador de placeholder personalizado
+extension View {
+    func placeholder<Content: View>(
+        _ text: String,
+        when shouldShow: Bool,
+        alignment: Alignment = .leading,
+        @ViewBuilder placeholder: () -> Content) -> some View {
+        
+        ZStack(alignment: alignment) {
+            placeholder().opacity(shouldShow ? 1 : 0)
+            self
+        }
+    }
 }
