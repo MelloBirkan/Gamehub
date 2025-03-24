@@ -63,12 +63,8 @@ struct Game: Decodable, Identifiable {
                 symbols.append("desktopcomputer")
             } else if slug.contains("mac") || slug.contains("apple") {
                 symbols.append("apple.logo")
-            } else if slug.contains("nintendo") || slug.contains("switch") {
-                symbols.append("nintendo.logo")
-            } else if slug.contains("ios") || slug.contains("iphone") {
+            }  else if slug.contains("ios") || slug.contains("iphone") {
                 symbols.append("iphone")
-            } else if slug.contains("android") {
-                symbols.append("android.logo")
             } 
         }
         
