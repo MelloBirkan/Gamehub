@@ -27,6 +27,7 @@ struct Game: Decodable, Identifiable {
     let updated: String?
     let esrbRating: ESRBRating?
     let platforms: [PlatformElement]?
+    let genres: [Genre]?
     
     enum CodingKeys: String, CodingKey {
         case id, slug, name, released, tba
@@ -42,7 +43,41 @@ struct Game: Decodable, Identifiable {
         case suggestionsCount = "suggestions_count"
         case updated
         case esrbRating = "esrb_rating"
-        case platforms
+        case platforms, genres
+    }
+    
+    var platformSymbols: [String] {
+        guard let platforms = platforms else { return [] }
+        
+        var symbols: [String] = []
+        
+        for platformElement in platforms {
+            guard let platform = platformElement.platform else { continue }
+            guard let slug = platform.slug?.lowercased() else { continue }
+            
+            if slug.contains("playstation") || slug.contains("ps") {
+                symbols.append("playstation.logo")
+            } else if slug.contains("xbox") {
+                symbols.append("xbox.logo")
+            } else if slug.contains("pc") || slug.contains("windows") {
+                symbols.append("desktopcomputer")
+            } else if slug.contains("mac") || slug.contains("apple") {
+                symbols.append("apple.logo")
+            } else if slug.contains("linux") {
+                symbols.append("terminal")
+            } else if slug.contains("nintendo") || slug.contains("switch") {
+                symbols.append("nintendo.logo")
+            } else if slug.contains("ios") || slug.contains("iphone") {
+                symbols.append("iphone")
+            } else if slug.contains("android") {
+                symbols.append("android.logo")
+            } else {
+                symbols.append("gamecontroller")
+            }
+        }
+        
+        // Remove duplicates
+        return Array(Set(symbols))
     }
 }
 
@@ -89,4 +124,18 @@ struct Platform: Decodable {
 struct Requirements: Decodable {
     let minimum: String?
     let recommended: String?
+}
+
+struct Genre: Decodable {
+    let id: Int?
+    let name: String?
+    let slug: String?
+    let gamesCount: Int?
+    let imageBackground: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case id, name, slug
+        case gamesCount = "games_count"
+        case imageBackground = "image_background"
+    }
 }
