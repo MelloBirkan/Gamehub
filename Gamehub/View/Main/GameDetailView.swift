@@ -12,15 +12,14 @@ struct GameDetailView: View {
     @Environment(GamesViewModel.self) private var gamesViewModel
     @Environment(\.dismiss) var dismiss
     
+    // Definindo colunas para grid com tamanhos iguais
+    private let columns = [
+        GridItem(.flexible()),
+        GridItem(.flexible())
+    ]
+    
     var body: some View {
         VStack(spacing: 0) {
-            // Indicador de arraste para o sheet
-            RoundedRectangle(cornerRadius: 2.5)
-                .fill(Color.gray.opacity(0.3))
-                .frame(width: 40, height: 5)
-                .padding(.top, 8)
-                .padding(.bottom, 12)
-            
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     // Imagem de fundo
@@ -76,11 +75,11 @@ struct GameDetailView: View {
                         .padding()
                     }
                     
-                    // Informações do jogo
-                    VStack(alignment: .leading, spacing: 16) {
+                    // Conteúdo principal
+                    VStack(alignment: .leading, spacing: 24) {
                         // Título e avaliação
                         HStack {
-                            Text(game.name ?? "Título desconhecido")
+                            Text(game.name ?? "Unknown Title")
                                 .font(.title)
                                 .fontWeight(.bold)
                                 .foregroundColor(Color("TextColor"))
@@ -150,10 +149,12 @@ struct GameDetailView: View {
                             }
                         }
                         
+                        Divider()
+                        
                         // Classificação ESRB
                         if let esrbRating = game.esrbRating?.name {
                             HStack {
-                                Text("Classificação:")
+                                Text("Rating:")
                                     .font(.subheadline)
                                     .fontWeight(.medium)
                                     .foregroundColor(Color("TextColor"))
@@ -164,44 +165,102 @@ struct GameDetailView: View {
                                 
                                 Spacer()
                             }
+                            
+                            Divider()
                         }
                         
-                        Divider()
+                        // Avaliações detalhadas
+                        if let ratings = game.ratings, !ratings.isEmpty {
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("Ratings")
+                                    .font(.headline)
+                                    .foregroundColor(Color("TextColor"))
+                                
+                                ForEach(ratings, id: \.id) { rating in
+                                    HStack {
+                                        Text(rating.title ?? "")
+                                            .font(.subheadline)
+                                            .foregroundColor(Color("TextColor"))
+                                        
+                                        Spacer()
+                                        
+                                        Text("\(rating.count ?? 0)")
+                                            .font(.subheadline)
+                                            .foregroundColor(Color("TextColor").opacity(0.8))
+                                        
+                                        Text("(\(Int(rating.percent ?? 0))%)")
+                                            .font(.caption)
+                                            .foregroundColor(Color("PrimaryRedColor"))
+                                    }
+                                    
+                                    ProgressView(value: (rating.percent ?? 0) / 100)
+                                        .tint(ratingColor(title: rating.title ?? ""))
+                                }
+                            }
+                            
+                            Divider()
+                        }
                         
-                        // Estatísticas
+                        // Status de adição
+                        if let addedByStatus = game.addedByStatus {
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("Player Status")
+                                    .font(.headline)
+                                    .foregroundColor(Color("TextColor"))
+                                
+                                // Grid para manter os cards do mesmo tamanho
+                                LazyVGrid(columns: columns, spacing: 12) {
+                                    if let playing = addedByStatus.playing, playing > 0 {
+                                        playerStatusView(value: playing, title: "Playing", icon: "play.circle.fill")
+                                    }
+                                    
+                                    if let beaten = addedByStatus.beaten, beaten > 0 {
+                                        playerStatusView(value: beaten, title: "Completed", icon: "checkmark.circle.fill")
+                                    }
+                                    
+                                    if let owned = addedByStatus.owned, owned > 0 {
+                                        playerStatusView(value: owned, title: "Owned", icon: "person.fill")
+                                    }
+                                    
+                                    if let toplay = addedByStatus.toplay, toplay > 0 {
+                                        playerStatusView(value: toplay, title: "Want to Play", icon: "plusminus.circle.fill")
+                                    }
+                                    
+                                    if let dropped = addedByStatus.dropped, dropped > 0 {
+                                        playerStatusView(value: dropped, title: "Dropped", icon: "x.circle.fill")
+                                    }
+                                    
+                                    if let yet = addedByStatus.yet, yet > 0 {
+                                        playerStatusView(value: yet, title: "Not Yet", icon: "clock.fill")
+                                    }
+                                }
+                            }
+                            
+                            Divider()
+                        }
+                        
+                        // Estatísticas gerais
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Estatísticas")
+                            Text("General Statistics")
                                 .font(.headline)
                                 .foregroundColor(Color("TextColor"))
                             
                             HStack {
-                                statView(value: game.added ?? 0, title: "Adicionados")
+                                statView(value: game.added ?? 0, title: "Added")
                                 Divider()
                                     .frame(height: 40)
-                                statView(value: game.playtime ?? 0, title: "Horas jogadas")
+                                statView(value: game.playtime ?? 0, title: "Hours Played")
                                 Divider()
                                     .frame(height: 40)
-                                statView(value: game.ratingsCount ?? 0, title: "Avaliações")
+                                statView(value: game.ratingsCount ?? 0, title: "Ratings")
                             }
-                        }
-                        
-                        Divider()
-                        
-                        // Botão para jogar ou comprar
-                        Button {
-                            // Ação para comprar ou jogar
-                        } label: {
-                            HStack {
-                                Spacer()
-                                Text("JOGAR AGORA")
-                                    .font(.headline)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(.white)
-                                Spacer()
+                            
+                            if let updated = game.updated {
+                                Text("Last updated: \(formatDate(updated))")
+                                    .font(.caption)
+                                    .foregroundColor(Color("TextColor").opacity(0.6))
+                                    .frame(maxWidth: .infinity, alignment: .center)
                             }
-                            .padding()
-                            .background(Color("PrimaryRedColor"))
-                            .cornerRadius(12)
                         }
                     }
                     .padding()
@@ -224,6 +283,20 @@ struct GameDetailView: View {
         return dateFormatter.string(from: date)
     }
     
+    // Função geral para formatar datas
+    private func formatDate(_ dateString: String) -> String {
+        let inputFormatter = DateFormatter()
+        inputFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        
+        if let date = inputFormatter.date(from: dateString) {
+            let outputFormatter = DateFormatter()
+            outputFormatter.dateFormat = "dd/MM/yyyy"
+            return outputFormatter.string(from: date)
+        }
+        
+        return dateString
+    }
+    
     // Função auxiliar para determinar a cor do Metacritic
     private func metacriticColor(score: Int) -> Color {
         if score >= 75 {
@@ -233,6 +306,21 @@ struct GameDetailView: View {
         } else {
             return Color.red
         }
+    }
+    
+    // Função para cor de avaliação
+    private func ratingColor(title: String) -> Color {
+        let lowercaseTitle = title.lowercased()
+        
+        if lowercaseTitle.contains("exceptional") || lowercaseTitle.contains("recommended") {
+            return Color.green
+        } else if lowercaseTitle.contains("meh") {
+            return Color.yellow
+        } else if lowercaseTitle.contains("skip") {
+            return Color.red
+        } 
+        
+        return Color("PrimaryRedColor")
     }
     
     // View auxiliar para mostrar estatísticas
@@ -249,6 +337,31 @@ struct GameDetailView: View {
         }
         .frame(maxWidth: .infinity)
     }
+    
+    // View auxiliar para status de jogador
+    private func playerStatusView(value: Int, title: String, icon: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .foregroundColor(Color("PrimaryRedColor"))
+            
+            VStack(alignment: .leading) {
+                Text(title)
+                    .font(.subheadline)
+                    .foregroundColor(Color("TextColor"))
+                
+                Text("\(value)")
+                    .font(.caption)
+                    .foregroundColor(Color("TextColor").opacity(0.7))
+            }
+            
+            Spacer()
+        }
+        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
+        .background(Color("SystemColor"))
+        .cornerRadius(10)
+        .frame(maxWidth: .infinity)
+    }
 }
 
 #Preview {
@@ -261,20 +374,36 @@ struct GameDetailView: View {
         backgroundImage: "https://media.rawg.io/media/games/618/618c2031a07bbff6b4f611f10b6bcdbc.jpg",
         rating: 4.7,
         ratingTop: 5,
-        ratings: [],
+        ratings: [
+            Rating(id: 1, title: "Exceptional", count: 3000, percent: 70.5),
+            Rating(id: 2, title: "Recommended", count: 1500, percent: 20.0),
+            Rating(id: 3, title: "Meh", count: 500, percent: 7.5),
+            Rating(id: 4, title: "Skip", count: 100, percent: 2.0)
+        ],
         ratingsCount: 5632,
         reviewsTextCount: 543,
         added: 18325,
-        addedByStatus: nil,
+        addedByStatus: AddedByStatus(
+            yet: 450,
+            owned: 12000,
+            beaten: 3500,
+            toplay: 800,
+            dropped: 350,
+            playing: 1200
+        ),
         metacritic: 92,
         playtime: 45,
         suggestionsCount: 123,
-        updated: "2023-04-10",
+        updated: "2023-04-10T12:30:45",
         esrbRating: ESRBRating(id: 4, slug: "mature", name: "Mature"),
-        platforms: [],
+        platforms: [
+            PlatformElement(platform: Platform(id: 1, slug: "pc", name: "PC"), releasedAt: "2015-05-19", requirements: nil),
+            PlatformElement(platform: Platform(id: 2, slug: "playstation4", name: "PlayStation 4"), releasedAt: "2015-05-19", requirements: nil),
+            PlatformElement(platform: Platform(id: 3, slug: "xbox-one", name: "Xbox One"), releasedAt: "2015-05-19", requirements: nil)
+        ],
         genres: [
             Genre(id: 4, name: "RPG", slug: "rpg", gamesCount: 1234, imageBackground: ""),
-            Genre(id: 3, name: "Aventura", slug: "adventure", gamesCount: 1234, imageBackground: "")
+            Genre(id: 3, name: "Adventure", slug: "adventure", gamesCount: 1234, imageBackground: "")
         ]
     ))
     .environment(GamesViewModel())
