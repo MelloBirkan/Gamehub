@@ -13,7 +13,7 @@ struct GameCard: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            // Fundo do card com gradiente
+            // Card background with gradient
             RoundedRectangle(cornerRadius: 16)
                 .fill(
                     LinearGradient(
@@ -43,7 +43,7 @@ struct GameCard: View {
                 .frame(width: 180, height: 240)
                 .shadow(color: Color("AccentColor").opacity(0.1), radius: 10, x: 0, y: 5)
             
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(spacing: 8) {
                 gameImage
                 gameInfo
             }
@@ -56,85 +56,65 @@ struct GameCard: View {
     }
     
     private var gameImage: some View {
-        AsyncImage(url: URL(string: game.backgroundImage ?? "")) { phase in
-            switch phase {
-                case .empty:
-                    Rectangle()
-                        .fill(
-                            LinearGradient(
-                                gradient: Gradient(colors: [Color("WelcomePurpleColor").opacity(0.3), Color("DiscoverBlueColor").opacity(0.3)]),
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .overlay(
-                            ProgressView()
-                                .tint(Color.white)
-                        )
-                        .frame(width: 180, height: 145)
-                        .clipShape(
-                            UnevenRoundedRectangle(
-                                topLeadingRadius: 16,
-                                bottomLeadingRadius: 0,
-                                bottomTrailingRadius: 0,
-                                topTrailingRadius: 16
-                            )
-                        )
-                
-                case .success(let image):
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: 180, height: 145)
-                        .clipShape(
-                            UnevenRoundedRectangle(
-                                topLeadingRadius: 16,
-                                bottomLeadingRadius: 0,
-                                bottomTrailingRadius: 0,
-                                topTrailingRadius: 16
-                            )
-                        )
-                        .overlay(
-                            LinearGradient(
-                                gradient: Gradient(colors: [
-                                    Color.black.opacity(0.5),
-                                    Color.black.opacity(0.0)
-                                ]),
-                                startPoint: .top,
-                                endPoint: .center
-                            )
-                            .clipShape(
-                                UnevenRoundedRectangle(
-                                    topLeadingRadius: 16,
-                                    bottomLeadingRadius: 0,
-                                    bottomTrailingRadius: 0,
-                                    topTrailingRadius: 16
+        GeometryReader { geometry in
+            AsyncImage(url: URL(string: game.backgroundImage ?? "")) { phase in
+                switch phase {
+                    case .empty:
+                        Rectangle()
+                            .fill(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [Color("WelcomePurpleColor").opacity(0.3), Color("DiscoverBlueColor").opacity(0.3)]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
                                 )
                             )
-                        )
-                
-                case .failure:
-                    Rectangle()
-                        .fill(Color("SystemColor"))
-                        .overlay(
-                            Image(systemName: "photo")
-                                .font(.largeTitle)
-                                .foregroundColor(Color("TextColor").opacity(0.3))
-                        )
-                        .frame(width: 180, height: 145)
-                        .clipShape(
-                            UnevenRoundedRectangle(
-                                topLeadingRadius: 16,
-                                bottomLeadingRadius: 0,
-                                bottomTrailingRadius: 0,
-                                topTrailingRadius: 16
+                            .overlay(
+                                ProgressView()
+                                    .tint(Color.white)
                             )
-                        )
-                
-                @unknown default:
-                    EmptyView()
+                    
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: geometry.size.width)
+                            .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
+                            .clipped()
+                    
+                    case .failure:
+                        Rectangle()
+                            .fill(Color("SystemColor"))
+                            .overlay(
+                                Image(systemName: "photo")
+                                    .font(.largeTitle)
+                                    .foregroundColor(Color("TextColor").opacity(0.3))
+                            )
+                    
+                    @unknown default:
+                        EmptyView()
+                }
             }
+            .frame(width: geometry.size.width, height: geometry.size.height)
+            .overlay(
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color.black.opacity(0.5),
+                        Color.black.opacity(0.0)
+                    ]),
+                    startPoint: .top,
+                    endPoint: .center
+                )
+            )
         }
+        .frame(width: 180, height: 145)
+        .clipShape(
+            UnevenRoundedRectangle(
+                topLeadingRadius: 16,
+                bottomLeadingRadius: 0,
+                bottomTrailingRadius: 0,
+                topTrailingRadius: 16
+            )
+        )
     }
     
     private var gameInfo: some View {
@@ -156,7 +136,7 @@ struct GameCard: View {
                 .foregroundStyle(Color.white.opacity(0.7))
             
             HStack {
-                // Avaliação
+                // Rating
                 HStack(spacing: 2) {
                     Image(systemName: "star.fill")
                         .font(.caption2)
@@ -180,7 +160,7 @@ struct GameCard: View {
                 
                 Spacer()
                 
-                // Ícones de plataforma
+                // Platform icons
                 HStack(spacing: 4) {
                     ForEach(game.platformSymbols.prefix(3), id: \.self) { symbol in
                         Image(systemName: symbol)
@@ -196,13 +176,14 @@ struct GameCard: View {
                 }
             }
         }
+        .frame(width: 156)
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
     }
     
     private var formattedReleaseDate: String {
         guard let releasedString = game.released, !releasedString.isEmpty else {
-            return "Sem data de lançamento"
+            return "No release date"
         }
         
         let dateFormatter = DateFormatter()
@@ -212,7 +193,7 @@ struct GameCard: View {
             return releasedString
         }
         
-        dateFormatter.dateFormat = "dd/MM/yyyy"
+        dateFormatter.dateFormat = "MM/dd/yyyy"
         return dateFormatter.string(from: date)
     }
 }

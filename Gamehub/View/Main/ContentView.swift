@@ -10,7 +10,6 @@ import SwiftUI
 struct ContentView: View {
     @Environment(GamesViewModel.self) private var gamesViewModel
     @State private var query: String = ""
-    @State private var animateGradient = false
     
     var body: some View {
         @Bindable var gamesViewModel = gamesViewModel
@@ -18,22 +17,70 @@ struct ContentView: View {
         
         NavigationStack {
             ZStack {
-                // Fundo com gradiente animado
-                LinearGradient(
-                    gradient: Gradient(colors: [
-                        Color("BackgroudnColor"), 
-                        Color.black.opacity(0.9)
-                    ]),
-                    startPoint: animateGradient ? .topLeading : .bottomTrailing,
-                    endPoint: animateGradient ? .bottomTrailing : .topLeading
-                )
-                .ignoresSafeArea()
-                .animation(Animation.easeInOut(duration: 10.0).repeatForever(autoreverses: true), value: animateGradient)
-                .onAppear { animateGradient = true }
+                // Background with static light points
+                GeometryReader { geometry in
+                    ZStack {
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                Color("BackgroudnColor"), 
+                                Color.black.opacity(0.9)
+                            ]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                        .ignoresSafeArea()
+                        
+                        // Static light points
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color("AccentColor").opacity(0.4),
+                                        Color("SecondaryPurpleColor").opacity(0.2)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: geometry.size.width * 0.8)
+                            .offset(x: -geometry.size.width * 0.2, y: -geometry.size.height * 0.2)
+                            .blur(radius: 80)
+                        
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color("SecondaryPurpleColor").opacity(0.3),
+                                        Color("AccentColor").opacity(0.15)
+                                    ],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .frame(width: geometry.size.width * 0.7)
+                            .offset(x: geometry.size.width * 0.3, y: geometry.size.height * 0.2)
+                            .blur(radius: 75)
+                        
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color("WelcomePurpleColor").opacity(0.25),
+                                        Color("DiscoverBlueColor").opacity(0.15)
+                                    ],
+                                    startPoint: .bottomLeading,
+                                    endPoint: .topTrailing
+                                )
+                            )
+                            .frame(width: geometry.size.width * 0.6)
+                            .offset(x: -geometry.size.width * 0.1, y: geometry.size.height * 0.4)
+                            .blur(radius: 70)
+                    }
+                }
                 
-                // Conteúdo principal
+                // Main content
                 VStack(spacing: 16) {
-                    // Logo animado
+                    // Animated logo
                     Text("GAMEHUB")
                         .font(.system(size: 28, weight: .black, design: .rounded))
                         .foregroundStyle(
@@ -55,7 +102,7 @@ struct ContentView: View {
                                 .tint(Color("DiscoverBlueColor"))
                                 .scaleEffect(1.5)
                             
-                            Text("Buscando jogos...")
+                            Text("Searching games...")
                                 .font(.headline)
                                 .foregroundStyle(
                                     LinearGradient(
@@ -79,7 +126,7 @@ struct ContentView: View {
                                 .font(.system(size: 60))
                                 .foregroundColor(Color("WelcomePurpleColor").opacity(0.7))
                             
-                            Text("Nenhum jogo encontrado")
+                            Text("No games found")
                                 .font(.headline)
                                 .foregroundColor(.white.opacity(0.7))
                                 .multilineTextAlignment(.center)
@@ -130,8 +177,8 @@ struct ContentView: View {
             TextField("", text: $query)
                 .font(.system(size: 16))
                 .tint(Color("DiscoverBlueColor"))
-                .placeholder("Buscar jogos", when: query.isEmpty) {
-                    Text("Buscar jogos")
+                .placeholder("Search games", when: query.isEmpty) {
+                    Text("Search games")
                         .font(.system(size: 16))
                         .foregroundStyle(Color("DiscoverBlueColor").opacity(0.8))
                 }

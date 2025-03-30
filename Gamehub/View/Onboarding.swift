@@ -16,16 +16,16 @@ struct Onboarding: View {
     @State private var playerLooper: AVPlayerLooper?
     @State private var animateBackground = false
     
-    // Conteúdo do onboarding
+    // Content for onboarding
     private let onboardingData = [
-        OnboardingItem(title: "Bem-vindo ao GameHub", description: "Sua central de jogos e comunidade gamer", systemImage: "gamecontroller.fill", color: Color("WelcomePurpleColor")),
-        OnboardingItem(title: "Descubra Novos Jogos", description: "Explore uma vasta biblioteca de jogos classificados por gênero", systemImage: "magnifyingglass", color: Color("DiscoverBlueColor")),
-        OnboardingItem(title: "Conecte-se com Amigos", description: "Jogue com amigos e participe de comunidades", systemImage: "person.2.fill", color: Color("ConnectPinkColor"))
+        OnboardingItem(title: "Welcome to GameHub", description: "Your gaming hub and gamer community", systemImage: "gamecontroller.fill", color: Color("WelcomePurpleColor")),
+        OnboardingItem(title: "Discover New Games", description: "Explore a vast library of games sorted by genre", systemImage: "magnifyingglass", color: Color("DiscoverBlueColor")),
+        OnboardingItem(title: "Connect with Friends", description: "Play with friends and join communities", systemImage: "person.2.fill", color: Color("ConnectPinkColor"))
     ]
     
     var body: some View {
         ZStack {
-            // Fundo escuro com gradiente animado
+            // Dark background with animated gradient
             LinearGradient(
                 gradient: Gradient(colors: [Color.black.opacity(0.8), Color("BackgroudnColor")]),
                 startPoint: animateBackground ? .topLeading : .bottomTrailing,
@@ -35,12 +35,12 @@ struct Onboarding: View {
             .animation(Animation.easeInOut(duration: 8.0).repeatForever(autoreverses: true), value: animateBackground)
             .onAppear { animateBackground = true }
             
-            // Efeito de partículas (simulado com círculos)
+            // Particle effect (simulated with circles)
             ParticleEffectView()
                 .opacity(0.15)
                 .ignoresSafeArea()
             
-            // Vídeo de fundo em loop
+            // Background video loop
             VideoPlayerWithLoop()
                 .disabled(true)
                 .aspectRatio(contentMode: .fill)
@@ -48,7 +48,7 @@ struct Onboarding: View {
                 .opacity(0.4)
                 .ignoresSafeArea()
                 .overlay(
-                    // Overlay gradiente para melhorar contraste
+                    // Gradient overlay to improve contrast
                     LinearGradient(
                         gradient: Gradient(colors: [Color.black.opacity(0.7), Color.black.opacity(0.3), Color.black.opacity(0.7)]),
                         startPoint: .top,
@@ -57,9 +57,9 @@ struct Onboarding: View {
                     .ignoresSafeArea()
                 )
             
-            // Conteúdo do onboarding
+            // Onboarding content
             VStack(spacing: 0) {
-                // Logo no topo
+                // Logo at the top
                 Text("GAMEHUB")
                     .font(.system(size: 32, weight: .black, design: .rounded))
                     .foregroundStyle(
@@ -72,7 +72,7 @@ struct Onboarding: View {
                     .padding(.top, 20)
                     .shadow(color: Color("AccentColor").opacity(0.5), radius: 10, x: 0, y: 0)
                 
-                // Conteúdo principal
+                // Main content
                 TabView(selection: $currentTab) {
                     ForEach(0..<onboardingData.count, id: \.self) { index in
                         OnboardingView(item: onboardingData[index])
@@ -84,7 +84,7 @@ struct Onboarding: View {
                 .animation(.easeInOut, value: currentTab)
                 .padding(.vertical)
                 
-                // Indicadores de página personalizados
+                // Custom page indicators
                 HStack(spacing: 12) {
                     ForEach(0..<onboardingData.count, id: \.self) { index in
                         Circle()
@@ -103,9 +103,9 @@ struct Onboarding: View {
                 }
                 .padding(.bottom, 20)
                 
-                // Botões de navegação
+                // Navigation buttons
                 HStack {
-                    // Botão Pular (visível apenas na primeira página)
+                    // Skip button (visible only on first page)
                     if currentTab == 0 {
                         Button(action: {
                             withAnimation {
@@ -113,7 +113,7 @@ struct Onboarding: View {
                                 dismiss()
                             }
                         }) {
-                            Text("Pular")
+                            Text("Skip")
                                 .font(.system(size: 16, weight: .medium))
                                 .foregroundColor(.white.opacity(0.7))
                                 .padding(.vertical, 12)
@@ -128,7 +128,7 @@ struct Onboarding: View {
                         Spacer()
                     }
                     
-                    // Botão Próximo/Começar
+                    // Next/Start button
                     Button(action: {
                         withAnimation {
                             if currentTab == onboardingData.count - 1 {
@@ -140,7 +140,7 @@ struct Onboarding: View {
                         }
                     }) {
                         HStack(spacing: 8) {
-                            Text(currentTab == onboardingData.count - 1 ? "Começar" : "Próximo")
+                            Text(currentTab == onboardingData.count - 1 ? "Start" : "Next")
                                 .font(.system(size: 16, weight: .bold))
                                 .foregroundColor(.white)
                             
@@ -177,9 +177,7 @@ struct Onboarding: View {
     }
 }
 
-
-
-// Efeito de partículas
+// Particle effect
 struct ParticleEffectView: View {
     @State private var particles: [Particle] = []
     
@@ -215,7 +213,7 @@ struct ParticleEffectView: View {
     }
 }
 
-// Estrutura para reproduzir vídeo em loop
+// Structure for looping video playback
 struct VideoPlayerWithLoop: View {
     @State private var player: AVQueuePlayer?
     @State private var playerLooper: AVPlayerLooper?
@@ -226,7 +224,7 @@ struct VideoPlayerWithLoop: View {
             if isVideoAvailable {
                 VideoPlayer(player: player)
             } else {
-                // Fallback quando o vídeo não está disponível
+                // Fallback when video is not available
                 Color.black
             }
         }
@@ -238,7 +236,7 @@ struct VideoPlayerWithLoop: View {
                 self.player?.play()
                 self.isVideoAvailable = true
             } else {
-                print("Vídeo 'gameVideo.mov' não encontrado no bundle")
+                print("Video 'gameVideo.mov' not found in bundle")
                 self.isVideoAvailable = false
             }
         }

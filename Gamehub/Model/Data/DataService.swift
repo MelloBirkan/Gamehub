@@ -42,7 +42,7 @@ struct DataService {
         components?.queryItems = queryItems
         
         guard let url = components?.url else {
-            print("Não foi possível criar a URL")
+            print("Could not create URL")
             return []
         }
         
@@ -55,7 +55,7 @@ struct DataService {
             
             guard let httpResponse = response as? HTTPURLResponse, 
                   httpResponse.statusCode == 200 else {
-                print("Erro na resposta do servidor")
+                print("Error in server response")
                 return []
             }
             
@@ -63,7 +63,7 @@ struct DataService {
             let result = try decoder.decode(FetchedGameList.self, from: data)
             return result.results
         } catch {
-            print("Erro ao buscar jogos: \(error)")
+            print("Error fetching games: \(error)")
             return []
         }
     }

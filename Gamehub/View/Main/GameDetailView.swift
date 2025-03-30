@@ -22,7 +22,7 @@ struct GameDetailView: View {
     
     var body: some View {
         ZStack {
-            // Background gradiente
+            // Gradient background
             LinearGradient(
                 gradient: Gradient(colors: [
                     Color("BackgroudnColor"),
@@ -33,13 +33,13 @@ struct GameDetailView: View {
             )
             .ignoresSafeArea()
             
-            // Conteúdo principal
+            // Main content
             VStack(spacing: 0) {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
-                        // Imagem de fundo
+                        // Background image
                         ZStack(alignment: .top) {
-                            // Imagem de fundo
+                            // Background image
                             AsyncImage(url: URL(string: game.backgroundImage ?? "")) { phase in
                                 switch phase {
                                 case .empty:
@@ -82,9 +82,9 @@ struct GameDetailView: View {
                                 )
                             )
                             
-                            // Título sobreposto na imagem
+                            // Title overlaid on image
                             VStack {
-                                // Botão para fechar o sheet
+                                // Button to close sheet
                                 HStack {
                                     Spacer()
                                     
@@ -113,7 +113,7 @@ struct GameDetailView: View {
                                 
                                 Spacer()
                                 
-                                // Título e avaliação
+                                // Title and rating
                                 VStack(alignment: .leading, spacing: 12) {
                                     Text(game.name ?? "Unknown Title")
                                         .font(.title)
@@ -122,7 +122,7 @@ struct GameDetailView: View {
                                         .shadow(color: .black.opacity(0.5), radius: 4, x: 0, y: 2)
                                     
                                     HStack {
-                                        // Plataformas
+                                        // Platforms
                                         if !game.platformSymbols.isEmpty {
                                             HStack(spacing: 8) {
                                                 ForEach(game.platformSymbols, id: \.self) { symbol in
@@ -136,7 +136,7 @@ struct GameDetailView: View {
                                                 .background(Color.white.opacity(0.3))
                                         }
                                         
-                                        // Data de lançamento
+                                        // Release date
                                         if let released = game.released {
                                             Text(formatReleaseDate(released))
                                                 .font(.subheadline)
@@ -177,7 +177,7 @@ struct GameDetailView: View {
                             }
                         }
                         
-                        // Avaliação destacada
+                        // Featured rating
                         HStack(spacing: 8) {
                             ZStack {
                                 Circle()
@@ -225,11 +225,11 @@ struct GameDetailView: View {
                             }
                             
                             VStack(alignment: .leading, spacing: 3) {
-                                Text("Avaliação dos Jogadores")
+                                Text("Player Ratings")
                                     .font(.headline)
                                     .foregroundColor(.white)
                                 
-                                Text("\(game.ratingsCount ?? 0) avaliações")
+                                Text("\(game.ratingsCount ?? 0) ratings")
                                     .font(.subheadline)
                                     .foregroundColor(.white.opacity(0.7))
                             }
@@ -269,7 +269,7 @@ struct GameDetailView: View {
                         .padding(.horizontal)
                         
                         VStack(alignment: .leading, spacing: 24) {
-                            // Gêneros
+                            // Genres
                             if let genres = game.genres, !genres.isEmpty {
                                 ScrollView(.horizontal, showsIndicators: false) {
                                     HStack(spacing: 8) {
@@ -344,11 +344,12 @@ struct GameDetailView: View {
                                     .background(Color.white.opacity(0.2))
                             }
                             
-                            // Avaliações detalhadas
+                            // Detailed ratings
                             if let ratings = game.ratings, !ratings.isEmpty {
-                                VStack(alignment: .leading, spacing: 16) {
-                                    Text("Avaliações")
-                                        .font(.headline)
+                                VStack(alignment: .leading, spacing: 12) {
+                                    Text("Ratings")
+                                        .font(.title3)
+                                        .fontWeight(.bold)
                                         .foregroundColor(.white)
                                     
                                     ForEach(ratings, id: \.id) { rating in
@@ -470,7 +471,7 @@ struct GameDetailView: View {
                                         .frame(height: 40)
                                         .background(Color.white.opacity(0.2))
                                     
-                                    statView(value: game.ratingsCount ?? 0, title: "Avaliações", icon: "star.fill", color: Color("ConnectPinkColor"))
+                                    statView(value: game.ratingsCount ?? 0, title: "Ratings", icon: "star.fill", color: Color("ConnectPinkColor"))
                                 }
                                 .padding(16)
                                 .background(
