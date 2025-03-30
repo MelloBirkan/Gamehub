@@ -10,7 +10,7 @@ import Foundation
 struct DataService {
     let apiKey = Bundle.main.infoDictionary?["API_KEY"] as? String
     
-    func fetchGames(dates: String? = nil, platforms: String? = nil) async -> [Game] {
+    func fetchGamesData(dates: String? = nil, platforms: String? = nil, search: String? = nil) async -> [Game] {
         guard let apiKey else {
             print("API key not found in Info.plist")
             return []
@@ -31,6 +31,12 @@ struct DataService {
         
         if let platforms = platforms {
             queryItems.append(URLQueryItem(name: "platforms", value: platforms))
+        }
+        
+        if let search = search {
+            // Substituir espaços por caracteres de consulta apropriados
+            let formattedSearch = search.replacingOccurrences(of: " ", with: "+")
+            queryItems.append(URLQueryItem(name: "search", value: formattedSearch))
         }
         
         components?.queryItems = queryItems

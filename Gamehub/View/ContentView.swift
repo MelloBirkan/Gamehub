@@ -18,16 +18,24 @@ struct ContentView: View {
             VStack {
                 searchBar
                 
-                ScrollView {
-                    LazyVGrid(columns: [
-                        GridItem(.flexible()),
-                        GridItem(.flexible())
-                    ], spacing: 16) {
-                        ForEach(games) { game in
-                            GameCard(game: game)
+                if gamesViewModel.isSearching {
+                    Spacer()
+                    ProgressView("Buscando jogos...")
+                        .tint(.secondaryRed)
+                        .foregroundStyle(.secondaryRed)
+                    Spacer()
+                } else {
+                    ScrollView {
+                        LazyVGrid(columns: [
+                            GridItem(.flexible()),
+                            GridItem(.flexible())
+                        ], spacing: 16) {
+                            ForEach(games) { game in
+                                GameCard(game: game)
+                            }
                         }
+                        .padding()
                     }
-                    .padding()
                 }
             }
             .navigationTitle("Games")
@@ -46,6 +54,40 @@ struct ContentView: View {
                 .placeholder("Search for a game", when: query.isEmpty) {
                     Text("Search for a game").foregroundStyle(.secondaryRed)
                 }
+                .onSubmit {
+                    if !query.isEmpty {
+                        gamesViewModel.searchGames(query: query)
+                    }
+                }
+            
+            if query.isEmpty {
+                EmptyView()
+            } else {
+                Button(action: {
+                    if gamesViewModel.isSearching {
+                        // Não faz nada enquanto estiver buscando
+                        return
+                    }
+                    
+                    if !query.isEmpty {
+                        // Se já tem texto, limpa a busca
+                        query = ""
+                        gamesViewModel.fetchGames()
+                    } else {
+                        // Se não tem texto, inicia busca de todos
+                        gamesViewModel.fetchGames()
+                    }
+                }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 18))
+                        .foregroundStyle(.white)
+                        .padding(3)
+                        .background(
+                            Circle()
+                                .fill(.secondaryRed)
+                        )
+                }
+            }
         }
         .foregroundStyle(.secondaryRed)
         .padding(10)
@@ -61,7 +103,7 @@ struct GameCard: View {
     var body: some View {
         ZStack(alignment: .top) {
             RoundedRectangle(cornerRadius: 8)
-                .frame(width: 180, height: 200)
+                .frame(width: 180, height: 220)
                 .foregroundStyle(Color("SystemColor"))
             
             VStack(alignment: .leading, spacing: 5) {
@@ -88,7 +130,7 @@ struct GameCard: View {
                     image
                         .resizable()
                         .aspectRatio(contentMode: .fill)
-                        .frame(width: 180)
+                        .frame(width: 180, height: 145)
                         .clipShape(roundedShape)
                     
                 case .failure:
