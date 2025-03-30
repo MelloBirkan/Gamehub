@@ -11,6 +11,8 @@ struct GameDetailView: View {
     var game: Game
     @Environment(GamesViewModel.self) private var gamesViewModel
     @Environment(\.dismiss) var dismiss
+    @State private var animateContent = false
+    @State private var showDescription = false
     
     // Definindo colunas para grid com tamanhos iguais
     private let columns = [
@@ -19,271 +21,504 @@ struct GameDetailView: View {
     ]
     
     var body: some View {
-        VStack(spacing: 0) {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    // Imagem de fundo
-                    ZStack(alignment: .top) {
+        ZStack {
+            // Background gradiente
+            LinearGradient(
+                gradient: Gradient(colors: [
+                    Color("BackgroudnColor"),
+                    Color.black.opacity(0.9)
+                ]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
+            
+            // Conteúdo principal
+            VStack(spacing: 0) {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
                         // Imagem de fundo
-                        AsyncImage(url: URL(string: game.backgroundImage ?? "")) { phase in
-                            switch phase {
-                            case .empty:
-                                Rectangle()
-                                    .fill(Color("SystemColor"))
-                                    .aspectRatio(16/9, contentMode: .fill)
-                            case .success(let image):
-                                image
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(maxHeight: 220)
-                            case .failure:
-                                Rectangle()
-                                    .fill(Color("SystemColor"))
-                                    .aspectRatio(16/9, contentMode: .fill)
-                            @unknown default:
-                                Rectangle()
-                                    .fill(Color("SystemColor"))
-                                    .aspectRatio(16/9, contentMode: .fill)
+                        ZStack(alignment: .top) {
+                            // Imagem de fundo
+                            AsyncImage(url: URL(string: game.backgroundImage ?? "")) { phase in
+                                switch phase {
+                                case .empty:
+                                    Rectangle()
+                                        .fill(
+                                            LinearGradient(
+                                                gradient: Gradient(colors: [Color("WelcomePurpleColor").opacity(0.3), Color("DiscoverBlueColor").opacity(0.3)]),
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            )
+                                        )
+                                        .aspectRatio(16/9, contentMode: .fill)
+                                case .success(let image):
+                                    image
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(maxHeight: 250)
+                                case .failure:
+                                    Rectangle()
+                                        .fill(Color("SystemColor"))
+                                        .aspectRatio(16/9, contentMode: .fill)
+                                @unknown default:
+                                    Rectangle()
+                                        .fill(Color("SystemColor"))
+                                        .aspectRatio(16/9, contentMode: .fill)
+                                }
                             }
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: 220)
-                        .clipped()
-                        .overlay(
-                            LinearGradient(
-                                gradient: Gradient(colors: [Color.black.opacity(0.7), Color.black.opacity(0.1)]),
-                                startPoint: .top,
-                                endPoint: .bottom
+                            .frame(maxWidth: .infinity, maxHeight: 250)
+                            .clipped()
+                            .overlay(
+                                // Gradiente de sobreposição para melhorar contraste
+                                LinearGradient(
+                                    gradient: Gradient(colors: [
+                                        Color.black.opacity(0.7),
+                                        Color.black.opacity(0.5),
+                                        Color.black.opacity(0.0)
+                                    ]),
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
                             )
-                        )
-                        
-                        // Botão para fechar o sheet
-                        HStack {
-                            Spacer()
                             
-                            Button {
-                                gamesViewModel.clearSelectedGame()
-                                dismiss()
-                            } label: {
-                                Image(systemName: "xmark")
-                                    .font(.title3)
-                                    .foregroundColor(.white)
-                                    .padding(10)
-                                    .background(Color.black.opacity(0.5))
-                                    .clipShape(Circle())
-                            }
-                        }
-                        .padding()
-                    }
-                    
-                    // Conteúdo principal
-                    VStack(alignment: .leading, spacing: 24) {
-                        // Título e avaliação
-                        HStack {
-                            Text(game.name ?? "Unknown Title")
-                                .font(.title)
-                                .fontWeight(.bold)
-                                .foregroundColor(Color("TextColor"))
-                            
-                            Spacer()
-                            
-                            HStack(spacing: 4) {
-                                Image(systemName: "star.fill")
-                                    .foregroundColor(Color("AccentColor"))
-                                Text(String(format: "%.1f", game.rating))
-                                    .font(.headline)
-                                    .foregroundColor(Color("TextColor"))
-                            }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color("AccentColor").opacity(0.1))
-                            .cornerRadius(8)
-                        }
-                        
-                        // Detalhes como plataformas e data de lançamento
-                        HStack(spacing: 12) {
-                            if !game.platformSymbols.isEmpty {
-                                HStack(spacing: 8) {
-                                    ForEach(game.platformSymbols, id: \.self) { symbol in
-                                        Image(systemName: symbol)
-                                            .foregroundColor(Color("ConnectPinkColor"))
+                            // Título sobreposto na imagem
+                            VStack {
+                                // Botão para fechar o sheet
+                                HStack {
+                                    Spacer()
+                                    
+                                    Button {
+                                        withAnimation {
+                                            gamesViewModel.clearSelectedGame()
+                                            dismiss()
+                                        }
+                                    } label: {
+                                        Image(systemName: "xmark")
+                                            .font(.title3)
+                                            .foregroundColor(.white)
+                                            .padding(10)
+                                            .background(
+                                                Circle()
+                                                    .fill(Color.black.opacity(0.5))
+                                                    .overlay(
+                                                        Circle()
+                                                            .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                                                    )
+                                            )
                                     }
+                                    .buttonStyle(ScaleButtonStyle())
                                 }
-                                
-                                Divider()
-                                    .frame(height: 16)
-                            }
-                            
-                            if let released = game.released {
-                                Text(formatReleaseDate(released))
-                                    .font(.subheadline)
-                                    .foregroundColor(Color("TextColor").opacity(0.8))
-                            }
-                            
-                            if let metacritic = game.metacritic, metacritic > 0 {
-                                Spacer()
-                                Text("\(metacritic)")
-                                    .font(.subheadline)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(.white)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(metacriticColor(score: metacritic))
-                                    .cornerRadius(6)
-                            }
-                        }
-                        
-                        // Gêneros
-                        if let genres = game.genres, !genres.isEmpty {
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: 8) {
-                                    ForEach(genres, id: \.id) { genre in
-                                        Text(genre.name ?? "")
-                                            .font(.footnote)
-                                            .padding(.horizontal, 12)
-                                            .padding(.vertical, 6)
-                                            .background(Color("SystemColor"))
-                                            .foregroundColor(Color("TextColor"))
-                                            .cornerRadius(16)
-                                    }
-                                }
-                            }
-                        }
-                        
-                        Divider()
-                        
-                        // Classificação ESRB
-                        if let esrbRating = game.esrbRating?.name {
-                            HStack {
-                                Text("Rating:")
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                                    .foregroundColor(Color("TextColor"))
-                                
-                                Text(esrbRating)
-                                    .font(.subheadline)
-                                    .foregroundColor(Color("TextColor").opacity(0.8))
+                                .padding()
                                 
                                 Spacer()
-                            }
-                            
-                            Divider()
-                        }
-                        
-                        // Avaliações detalhadas
-                        if let ratings = game.ratings, !ratings.isEmpty {
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("Ratings")
-                                    .font(.headline)
-                                    .foregroundColor(Color("TextColor"))
                                 
-                                ForEach(ratings, id: \.id) { rating in
+                                // Título e avaliação
+                                VStack(alignment: .leading, spacing: 12) {
+                                    Text(game.name ?? "Unknown Title")
+                                        .font(.title)
+                                        .fontWeight(.bold)
+                                        .foregroundColor(.white)
+                                        .shadow(color: .black.opacity(0.5), radius: 4, x: 0, y: 2)
+                                    
                                     HStack {
-                                        Text(rating.title ?? "")
-                                            .font(.subheadline)
-                                            .foregroundColor(Color("TextColor"))
+                                        // Plataformas
+                                        if !game.platformSymbols.isEmpty {
+                                            HStack(spacing: 8) {
+                                                ForEach(game.platformSymbols, id: \.self) { symbol in
+                                                    Image(systemName: symbol)
+                                                        .foregroundColor(Color("ConnectPinkColor"))
+                                                }
+                                            }
+                                            
+                                            Divider()
+                                                .frame(height: 16)
+                                                .background(Color.white.opacity(0.3))
+                                        }
+                                        
+                                        // Data de lançamento
+                                        if let released = game.released {
+                                            Text(formatReleaseDate(released))
+                                                .font(.subheadline)
+                                                .foregroundColor(.white.opacity(0.8))
+                                        }
                                         
                                         Spacer()
                                         
-                                        Text("\(rating.count ?? 0)")
-                                            .font(.subheadline)
-                                            .foregroundColor(Color("TextColor").opacity(0.8))
-                                        
-                                        Text("(\(Int(rating.percent ?? 0))%)")
-                                            .font(.caption)
-                                            .foregroundColor(Color("AccentColor"))
+                                        // Metacritic
+                                        if let metacritic = game.metacritic, metacritic > 0 {
+                                            Text("\(metacritic)")
+                                                .font(.subheadline)
+                                                .fontWeight(.bold)
+                                                .foregroundColor(.white)
+                                                .padding(.horizontal, 8)
+                                                .padding(.vertical, 4)
+                                                .background(
+                                                    RoundedRectangle(cornerRadius: 6)
+                                                        .fill(metacriticColor(score: metacritic))
+                                                        .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 2)
+                                                )
+                                        }
                                     }
-                                    
-                                    ProgressView(value: (rating.percent ?? 0) / 100)
-                                        .tint(ratingColor(title: rating.title ?? ""))
                                 }
+                                .padding(.horizontal, 16)
+                                .padding(.bottom, 16)
+                                .background(
+                                    // Gradiente para o título
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color.black.opacity(0.0),
+                                            Color.black.opacity(0.6)
+                                        ]),
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                )
                             }
-                            
-                            Divider()
                         }
                         
-                        // Status de adição
-                        if let addedByStatus = game.addedByStatus {
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("Player Status")
-                                    .font(.headline)
-                                    .foregroundColor(Color("TextColor"))
+                        // Avaliação destacada
+                        HStack(spacing: 8) {
+                            ZStack {
+                                Circle()
+                                    .fill(
+                                        LinearGradient(
+                                            gradient: Gradient(colors: [
+                                                Color("AccentColor").opacity(0.8),
+                                                Color("AccentColor").opacity(0.4)
+                                            ]),
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .frame(width: 60, height: 60)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(
+                                                LinearGradient(
+                                                    gradient: Gradient(colors: [
+                                                        Color.white.opacity(0.5),
+                                                        Color.white.opacity(0.2),
+                                                        Color.clear
+                                                    ]),
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                ),
+                                                lineWidth: 1.5
+                                            )
+                                    )
+                                    .shadow(color: Color("AccentColor").opacity(0.5), radius: 10, x: 0, y: 5)
                                 
-                                // Grid para manter os cards do mesmo tamanho
-                                LazyVGrid(columns: columns, spacing: 12) {
-                                    if let playing = addedByStatus.playing, playing > 0 {
-                                        playerStatusView(value: playing, title: "Playing", icon: "play.circle.fill")
-                                    }
+                                VStack(spacing: 0) {
+                                    Text(String(format: "%.1f", game.rating))
+                                        .font(.system(size: 20, weight: .bold))
+                                        .foregroundColor(.white)
                                     
-                                    if let beaten = addedByStatus.beaten, beaten > 0 {
-                                        playerStatusView(value: beaten, title: "Completed", icon: "checkmark.circle.fill")
+                                    HStack(spacing: 1) {
+                                        ForEach(0..<5) { i in
+                                            Image(systemName: i < Int(game.rating) ? "star.fill" : "star")
+                                                .font(.system(size: 8))
+                                                .foregroundColor(.white)
+                                        }
                                     }
-                                    
-                                    if let owned = addedByStatus.owned, owned > 0 {
-                                        playerStatusView(value: owned, title: "Owned", icon: "person.fill")
-                                    }
-                                    
-                                    if let toplay = addedByStatus.toplay, toplay > 0 {
-                                        playerStatusView(value: toplay, title: "Want to Play", icon: "plusminus.circle.fill")
-                                    }
-                                    
-                                    if let dropped = addedByStatus.dropped, dropped > 0 {
-                                        playerStatusView(value: dropped, title: "Dropped", icon: "x.circle.fill")
-                                    }
-                                    
-                                    if let yet = addedByStatus.yet, yet > 0 {
-                                        playerStatusView(value: yet, title: "Not Yet", icon: "clock.fill")
+                                }
+                            }
+                            
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("Avaliação dos Jogadores")
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                                
+                                Text("\(game.ratingsCount ?? 0) avaliações")
+                                    .font(.subheadline)
+                                    .foregroundColor(.white.opacity(0.7))
+                            }
+                            
+                            Spacer()
+                        }
+                        .padding(16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color("BackgroudnColor").opacity(0.7),
+                                            Color("BackgroudnColor").opacity(0.9)
+                                        ]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(
+                                            LinearGradient(
+                                                gradient: Gradient(colors: [
+                                                    Color.white.opacity(0.3),
+                                                    Color.white.opacity(0.1),
+                                                    Color.clear
+                                                ]),
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            ),
+                                            lineWidth: 1
+                                        )
+                                )
+                        )
+                        .offset(y: -20)
+                        .padding(.horizontal)
+                        
+                        VStack(alignment: .leading, spacing: 24) {
+                            // Gêneros
+                            if let genres = game.genres, !genres.isEmpty {
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    HStack(spacing: 8) {
+                                        ForEach(genres, id: \.id) { genre in
+                                            Text(genre.name ?? "")
+                                                .font(.system(size: 14, weight: .medium))
+                                                .foregroundColor(.white)
+                                                .padding(.horizontal, 16)
+                                                .padding(.vertical, 8)
+                                                .background(
+                                                    Capsule()
+                                                        .fill(
+                                                            LinearGradient(
+                                                                gradient: Gradient(colors: [
+                                                                    Color("WelcomePurpleColor").opacity(0.8),
+                                                                    Color("WelcomePurpleColor").opacity(0.5)
+                                                                ]),
+                                                                startPoint: .topLeading,
+                                                                endPoint: .bottomTrailing
+                                                            )
+                                                        )
+                                                        .overlay(
+                                                            Capsule()
+                                                                .stroke(
+                                                                    LinearGradient(
+                                                                        gradient: Gradient(colors: [
+                                                                            Color.white.opacity(0.3),
+                                                                            Color.white.opacity(0.1),
+                                                                            Color.clear
+                                                                        ]),
+                                                                        startPoint: .topLeading,
+                                                                        endPoint: .bottomTrailing
+                                                                    ),
+                                                                    lineWidth: 1
+                                                                )
+                                                        )
+                                                )
+                                        }
                                     }
                                 }
                             }
                             
                             Divider()
-                        }
-                        
-                        // Estatísticas gerais
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("General Statistics")
-                                .font(.headline)
-                                .foregroundColor(Color("TextColor"))
+                                .background(Color.white.opacity(0.2))
                             
-                            HStack {
-                                statView(value: game.added ?? 0, title: "Added")
+                            // Classificação ESRB
+                            if let esrbRating = game.esrbRating?.name {
+                                HStack {
+                                    Text("Classificação:")
+                                        .font(.subheadline)
+                                        .fontWeight(.medium)
+                                        .foregroundColor(.white.opacity(0.8))
+                                    
+                                    Text(esrbRating)
+                                        .font(.system(size: 15, weight: .semibold))
+                                        .foregroundColor(.white)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(
+                                            Capsule()
+                                                .fill(Color("DiscoverBlueColor").opacity(0.3))
+                                                .overlay(
+                                                    Capsule()
+                                                        .stroke(Color("DiscoverBlueColor").opacity(0.5), lineWidth: 1)
+                                                )
+                                        )
+                                    
+                                    Spacer()
+                                }
+                                
                                 Divider()
-                                    .frame(height: 40)
-                                statView(value: game.playtime ?? 0, title: "Hours Played")
-                                Divider()
-                                    .frame(height: 40)
-                                statView(value: game.ratingsCount ?? 0, title: "Ratings")
+                                    .background(Color.white.opacity(0.2))
                             }
                             
-                            if let updated = game.updated {
-                                Text("Last updated: \(formatDate(updated))")
-                                    .font(.caption)
-                                    .foregroundColor(Color("TextColor").opacity(0.6))
-                                    .frame(maxWidth: .infinity, alignment: .center)
+                            // Avaliações detalhadas
+                            if let ratings = game.ratings, !ratings.isEmpty {
+                                VStack(alignment: .leading, spacing: 16) {
+                                    Text("Avaliações")
+                                        .font(.headline)
+                                        .foregroundColor(.white)
+                                    
+                                    ForEach(ratings, id: \.id) { rating in
+                                        VStack(alignment: .leading, spacing: 8) {
+                                            HStack {
+                                                Text(rating.title ?? "")
+                                                    .font(.system(size: 15, weight: .medium))
+                                                    .foregroundColor(.white)
+                                                
+                                                Spacer()
+                                                
+                                                Text("\(rating.count ?? 0)")
+                                                    .font(.subheadline)
+                                                    .foregroundColor(.white.opacity(0.8))
+                                                
+                                                Text("(\(Int(rating.percent ?? 0))%)")
+                                                    .font(.caption)
+                                                    .foregroundColor(ratingColor(title: rating.title ?? ""))
+                                            }
+                                            
+                                            // Barra de progresso personalizada
+                                            GeometryReader { geometry in
+                                                ZStack(alignment: .leading) {
+                                                    // Fundo
+                                                    RoundedRectangle(cornerRadius: 4)
+                                                        .fill(Color.white.opacity(0.1))
+                                                        .frame(height: 8)
+                                                    
+                                                    // Progresso
+                                                    RoundedRectangle(cornerRadius: 4)
+                                                        .fill(
+                                                            LinearGradient(
+                                                                gradient: Gradient(colors: [
+                                                                    ratingColor(title: rating.title ?? ""),
+                                                                    ratingColor(title: rating.title ?? "").opacity(0.7)
+                                                                ]),
+                                                                startPoint: .leading,
+                                                                endPoint: .trailing
+                                                            )
+                                                        )
+                                                        .frame(width: geometry.size.width * CGFloat(rating.percent ?? 0) / 100, height: 8)
+                                                        .animation(.spring(response: 0.8, dampingFraction: 0.8), value: animateContent)
+                                                }
+                                            }
+                                            .frame(height: 8)
+                                        }
+                                        .padding(.vertical, 4)
+                                    }
+                                }
+                                .padding(16)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .fill(Color.black.opacity(0.3))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 16)
+                                                .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                                        )
+                                )
+                                
+                                Divider()
+                                    .background(Color.white.opacity(0.2))
+                            }
+                            
+                            // Status de adição
+                            if let addedByStatus = game.addedByStatus {
+                                VStack(alignment: .leading, spacing: 16) {
+                                    Text("Status dos Jogadores")
+                                        .font(.headline)
+                                        .foregroundColor(.white)
+                                    
+                                    // Grid para manter os cards do mesmo tamanho
+                                    LazyVGrid(columns: columns, spacing: 16) {
+                                        if let playing = addedByStatus.playing, playing > 0 {
+                                            playerStatusView(value: playing, title: "Jogando", icon: "play.circle.fill", color: Color("DiscoverBlueColor"))
+                                        }
+                                        
+                                        if let beaten = addedByStatus.beaten, beaten > 0 {
+                                            playerStatusView(value: beaten, title: "Completo", icon: "checkmark.circle.fill", color: Color("WelcomePurpleColor"))
+                                        }
+                                        
+                                        if let owned = addedByStatus.owned, owned > 0 {
+                                            playerStatusView(value: owned, title: "Possui", icon: "person.fill", color: Color("ConnectPinkColor"))
+                                        }
+                                        
+                                        if let toplay = addedByStatus.toplay, toplay > 0 {
+                                            playerStatusView(value: toplay, title: "Quer Jogar", icon: "plusminus.circle.fill", color: Color("AccentColor"))
+                                        }
+                                        
+                                        if let dropped = addedByStatus.dropped, dropped > 0 {
+                                            playerStatusView(value: dropped, title: "Abandonou", icon: "x.circle.fill", color: Color.red)
+                                        }
+                                        
+                                        if let yet = addedByStatus.yet, yet > 0 {
+                                            playerStatusView(value: yet, title: "Pendente", icon: "clock.fill", color: Color("SecondaryPurpleColor"))
+                                        }
+                                    }
+                                }
+                                
+                                Divider()
+                                    .background(Color.white.opacity(0.2))
+                            }
+                            
+                            // Estatísticas gerais
+                            VStack(alignment: .leading, spacing: 16) {
+                                Text("Estatísticas Gerais")
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                                
+                                HStack(spacing: 0) {
+                                    statView(value: game.added ?? 0, title: "Adicionado", icon: "plus.circle.fill", color: Color("WelcomePurpleColor"))
+                                    
+                                    Divider()
+                                        .frame(height: 40)
+                                        .background(Color.white.opacity(0.2))
+                                    
+                                    statView(value: game.playtime ?? 0, title: "Horas Jogadas", icon: "clock.fill", color: Color("DiscoverBlueColor"))
+                                    
+                                    Divider()
+                                        .frame(height: 40)
+                                        .background(Color.white.opacity(0.2))
+                                    
+                                    statView(value: game.ratingsCount ?? 0, title: "Avaliações", icon: "star.fill", color: Color("ConnectPinkColor"))
+                                }
+                                .padding(16)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .fill(Color.black.opacity(0.3))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 16)
+                                                .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                                        )
+                                )
+                                
+                                if let updated = game.updated {
+                                    Text("Última atualização: \(formatDate(updated))")
+                                        .font(.caption)
+                                        .foregroundColor(.white.opacity(0.6))
+                                        .frame(maxWidth: .infinity, alignment: .center)
+                                }
                             }
                         }
+                        .padding(.horizontal)
+                        .offset(y: -10)
                     }
-                    .padding(.horizontal)
                 }
+                .scrollIndicators(.hidden)
             }
         }
-        .background(Color.black.opacity(0.05))
+        .onAppear {
+            withAnimation(.easeOut(duration: 0.5)) {
+                animateContent = true
+            }
+        }
+        .preferredColorScheme(.dark)
     }
     
-    // Função auxiliar para formatar a data de lançamento
+    // MARK: - Helper Functions
+    
     private func formatReleaseDate(_ dateString: String) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         
         if let date = formatter.date(from: dateString) {
-            formatter.dateFormat = "MMM d, yyyy"
+            formatter.dateFormat = "dd/MM/yyyy"
             return formatter.string(from: date)
         }
         
         return dateString
     }
     
-    // Função geral para formatar datas
     private func formatDate(_ dateString: String) -> String {
         let inputFormatter = DateFormatter()
         inputFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
@@ -297,7 +532,6 @@ struct GameDetailView: View {
         return dateString
     }
     
-    // Função auxiliar para determinar a cor do Metacritic
     private func metacriticColor(score: Int) -> Color {
         if score >= 75 {
             return .green
@@ -308,7 +542,6 @@ struct GameDetailView: View {
         }
     }
     
-    // Função para cor de avaliação
     private func ratingColor(title: String) -> Color {
         switch title.lowercased() {
         case "exceptional":
@@ -324,44 +557,80 @@ struct GameDetailView: View {
         }
     }
     
-    // View auxiliar para mostrar estatísticas
-    private func statView(value: Int, title: String) -> some View {
-        VStack(spacing: 4) {
+    // MARK: - Views Helpers
+    
+    private func statView(value: Int, title: String, icon: String, color: Color) -> some View {
+        VStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.system(size: 20))
+                .foregroundColor(color)
+            
             Text("\(value)")
                 .font(.headline)
-                .foregroundColor(Color("AccentColor"))
+                .fontWeight(.bold)
+                .foregroundColor(.white)
             
             Text(title)
                 .font(.caption)
-                .foregroundColor(Color("TextColor").opacity(0.6))
+                .foregroundColor(.white.opacity(0.7))
         }
         .frame(maxWidth: .infinity)
     }
     
-    // View auxiliar para status de jogador
-    private func playerStatusView(value: Int, title: String, icon: String) -> some View {
+    private func playerStatusView(value: Int, title: String, icon: String, color: Color) -> some View {
         HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.title2)
-                .foregroundColor(Color("AccentColor"))
+            ZStack {
+                Circle()
+                    .fill(color.opacity(0.2))
+                    .frame(width: 40, height: 40)
+                
+                Image(systemName: icon)
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundColor(color)
+            }
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundColor(Color("TextColor"))
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundColor(.white)
                 
                 Text("\(value)")
-                    .font(.caption)
-                    .foregroundColor(Color("TextColor").opacity(0.6))
+                    .font(.system(size: 13))
+                    .foregroundColor(.white.opacity(0.7))
             }
             
             Spacer()
         }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color.black.opacity(0.5),
+                            Color.black.opacity(0.3)
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    color.opacity(0.5),
+                                    color.opacity(0.2),
+                                    Color.clear
+                                ]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                )
+        )
+        .shadow(color: color.opacity(0.1), radius: 8, x: 0, y: 4)
     }
 }
 

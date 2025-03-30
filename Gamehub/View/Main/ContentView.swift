@@ -10,39 +10,105 @@ import SwiftUI
 struct ContentView: View {
     @Environment(GamesViewModel.self) private var gamesViewModel
     @State private var query: String = ""
+    @State private var animateGradient = false
     
     var body: some View {
         @Bindable var gamesViewModel = gamesViewModel
         let games = gamesViewModel.games
         
         NavigationStack {
-            VStack {
-                searchBar
-                 
-                if gamesViewModel.isSearching {
-                    Spacer()
-                    ProgressView("Searching for games...")
-                        .tint(Color("DiscoverBlueColor"))
-                        .foregroundStyle(Color("DiscoverBlueColor"))
-                    Spacer()
-                } else {
-                    ScrollView {
-                        LazyVGrid(columns: [
-                            GridItem(.flexible()),
-                            GridItem(.flexible())
-                        ], spacing: 16) {
-                            ForEach(games) { game in
-                                GameCard(game: game)
-                                    .onTapGesture {
-                                        gamesViewModel.selectGame(game)
-                                    }
-                            }
+            ZStack {
+                // Fundo com gradiente animado
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color("BackgroudnColor"), 
+                        Color.black.opacity(0.9)
+                    ]),
+                    startPoint: animateGradient ? .topLeading : .bottomTrailing,
+                    endPoint: animateGradient ? .bottomTrailing : .topLeading
+                )
+                .ignoresSafeArea()
+                .animation(Animation.easeInOut(duration: 10.0).repeatForever(autoreverses: true), value: animateGradient)
+                .onAppear { animateGradient = true }
+                
+                // Conteúdo principal
+                VStack(spacing: 16) {
+                    // Logo animado
+                    Text("GAMEHUB")
+                        .font(.system(size: 28, weight: .black, design: .rounded))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [Color("AccentColor"), Color("SecondaryPurpleColor")],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .padding(.top, 20)
+                        .shadow(color: Color("AccentColor").opacity(0.5), radius: 10, x: 0, y: 0)
+                    
+                    searchBar
+                    
+                    if gamesViewModel.isSearching {
+                        Spacer()
+                        VStack(spacing: 16) {
+                            ProgressView()
+                                .tint(Color("DiscoverBlueColor"))
+                                .scaleEffect(1.5)
+                            
+                            Text("Buscando jogos...")
+                                .font(.headline)
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: [Color("DiscoverBlueColor"), Color("DiscoverBlueColor").opacity(0.7)],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
                         }
-                        .padding()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(
+                            RoundedRectangle(cornerRadius: 20)
+                                .fill(Color.black.opacity(0.4))
+                                .padding()
+                        )
+                        Spacer()
+                    } else if games.isEmpty {
+                        Spacer()
+                        VStack(spacing: 16) {
+                            Image(systemName: "gamecontroller.fill")
+                                .font(.system(size: 60))
+                                .foregroundColor(Color("WelcomePurpleColor").opacity(0.7))
+                            
+                            Text("Nenhum jogo encontrado")
+                                .font(.headline)
+                                .foregroundColor(.white.opacity(0.7))
+                                .multilineTextAlignment(.center)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        Spacer()
+                    } else {
+                        ScrollView {
+                            LazyVGrid(columns: [
+                                GridItem(.flexible()),
+                                GridItem(.flexible())
+                            ], spacing: 20) {
+                                ForEach(games) { game in
+                                    GameCard(game: game)
+                                        .onTapGesture {
+                                            withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+                                                gamesViewModel.selectGame(game)
+                                            }
+                                        }
+                                }
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.bottom, 20)
+                        }
+                        .scrollIndicators(.hidden)
                     }
                 }
             }
-            .navigationTitle("Games")
+            .navigationBarHidden(true)
             .sheet(item: $gamesViewModel.selectedGame) { game in
                 GameDetailView(game: game)
                     .onDisappear {
@@ -50,20 +116,26 @@ struct ContentView: View {
                     }
             }
         }
+        .preferredColorScheme(.dark)
         .onAppear {
             gamesViewModel.fetchGames()
         }
     }
     
     private var searchBar: some View {
-        HStack {
+        HStack(spacing: 12) {
             Image(systemName: "magnifyingglass")
+                .font(.system(size: 18, weight: .medium))
             
             TextField("", text: $query)
+                .font(.system(size: 16))
                 .tint(Color("DiscoverBlueColor"))
-                .placeholder("Search for a game", when: query.isEmpty) {
-                    Text("Search for a game").foregroundStyle(Color("DiscoverBlueColor"))
+                .placeholder("Buscar jogos", when: query.isEmpty) {
+                    Text("Buscar jogos")
+                        .font(.system(size: 16))
+                        .foregroundStyle(Color("DiscoverBlueColor").opacity(0.8))
                 }
+                .submitLabel(.search)
                 .onSubmit {
                     if !query.isEmpty {
                         gamesViewModel.searchGames(query: query)
@@ -75,17 +147,14 @@ struct ContentView: View {
             } else {
                 Button(action: {
                     if gamesViewModel.isSearching {
-                        // Não faz nada enquanto estiver buscando
                         return
                     }
                     
                     if !query.isEmpty {
-                        // Se já tem texto, limpa a busca
-                        query = ""
-                        gamesViewModel.fetchGames()
-                    } else {
-                        // Se não tem texto, inicia busca de todos
-                        gamesViewModel.fetchGames()
+                        withAnimation {
+                            query = ""
+                            gamesViewModel.fetchGames()
+                        }
                     }
                 }) {
                     Image(systemName: "xmark.circle.fill")
@@ -94,19 +163,61 @@ struct ContentView: View {
                         .padding(3)
                         .background(
                             Circle()
-                                .fill(Color("WelcomePurpleColor"))
+                                .fill(
+                                    LinearGradient(
+                                        colors: [Color("WelcomePurpleColor"), Color("WelcomePurpleColor").opacity(0.8)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
                         )
                 }
+                .buttonStyle(ScaleButtonStyle())
             }
         }
         .foregroundStyle(Color("DiscoverBlueColor"))
-        .padding(10)
-        .background(Color("BackgroudnColor"))
-        .clipShape(.rect(cornerRadius: 8))
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color("BackgroudnColor").opacity(0.7),
+                            Color("BackgroudnColor").opacity(0.9)
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color.white.opacity(0.3),
+                                    Color.white.opacity(0.1),
+                                    Color.clear
+                                ]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                )
+                .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 4)
+        )
         .padding(.horizontal)
     }
 }
 
+// Efeito de escala para botões
+struct ScaleButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.95 : 1)
+            .animation(.spring(), value: configuration.isPressed)
+    }
+}
 
 #Preview {
     ContentView()
