@@ -88,14 +88,14 @@ struct GameDetailView: View {
                             
                             HStack(spacing: 4) {
                                 Image(systemName: "star.fill")
-                                    .foregroundColor(Color("PrimaryRedColor"))
+                                    .foregroundColor(Color("AccentColor"))
                                 Text(String(format: "%.1f", game.rating))
                                     .font(.headline)
                                     .foregroundColor(Color("TextColor"))
                             }
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
-                            .background(Color("PrimaryRedColor").opacity(0.1))
+                            .background(Color("AccentColor").opacity(0.1))
                             .cornerRadius(8)
                         }
                         
@@ -105,7 +105,7 @@ struct GameDetailView: View {
                                 HStack(spacing: 8) {
                                     ForEach(game.platformSymbols, id: \.self) { symbol in
                                         Image(systemName: symbol)
-                                            .foregroundColor(Color("SecondaryRedColor"))
+                                            .foregroundColor(Color("ConnectPinkColor"))
                                     }
                                 }
                                 
@@ -190,7 +190,7 @@ struct GameDetailView: View {
                                         
                                         Text("(\(Int(rating.percent ?? 0))%)")
                                             .font(.caption)
-                                            .foregroundColor(Color("PrimaryRedColor"))
+                                            .foregroundColor(Color("AccentColor"))
                                     }
                                     
                                     ProgressView(value: (rating.percent ?? 0) / 100)
@@ -263,24 +263,24 @@ struct GameDetailView: View {
                             }
                         }
                     }
-                    .padding()
+                    .padding(.horizontal)
                 }
             }
         }
-        .background(Color("BackgroudnColor"))
+        .background(Color.black.opacity(0.05))
     }
     
     // Função auxiliar para formatar a data de lançamento
     private func formatReleaseDate(_ dateString: String) -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
         
-        guard let date = dateFormatter.date(from: dateString) else {
-            return dateString
+        if let date = formatter.date(from: dateString) {
+            formatter.dateFormat = "MMM d, yyyy"
+            return formatter.string(from: date)
         }
         
-        dateFormatter.dateFormat = "dd MMM yyyy"
-        return dateFormatter.string(from: date)
+        return dateString
     }
     
     // Função geral para formatar datas
@@ -300,67 +300,68 @@ struct GameDetailView: View {
     // Função auxiliar para determinar a cor do Metacritic
     private func metacriticColor(score: Int) -> Color {
         if score >= 75 {
-            return Color.green
+            return .green
         } else if score >= 50 {
-            return Color.yellow
+            return .yellow
         } else {
-            return Color.red
+            return .red
         }
     }
     
     // Função para cor de avaliação
     private func ratingColor(title: String) -> Color {
-        let lowercaseTitle = title.lowercased()
-        
-        if lowercaseTitle.contains("exceptional") || lowercaseTitle.contains("recommended") {
-            return Color.green
-        } else if lowercaseTitle.contains("meh") {
-            return Color.yellow
-        } else if lowercaseTitle.contains("skip") {
-            return Color.red
-        } 
-        
-        return Color("PrimaryRedColor")
+        switch title.lowercased() {
+        case "exceptional":
+            return Color("WelcomePurpleColor")
+        case "recommended":
+            return Color("DiscoverBlueColor")
+        case "meh":
+            return Color("ConnectPinkColor")
+        case "skip":
+            return .red
+        default:
+            return Color("AccentColor")
+        }
     }
     
     // View auxiliar para mostrar estatísticas
     private func statView(value: Int, title: String) -> some View {
-        VStack {
+        VStack(spacing: 4) {
             Text("\(value)")
                 .font(.headline)
-                .fontWeight(.bold)
-                .foregroundColor(Color("PrimaryRedColor"))
+                .foregroundColor(Color("AccentColor"))
             
             Text(title)
                 .font(.caption)
-                .foregroundColor(Color("TextColor").opacity(0.8))
+                .foregroundColor(Color("TextColor").opacity(0.6))
         }
         .frame(maxWidth: .infinity)
     }
     
     // View auxiliar para status de jogador
     private func playerStatusView(value: Int, title: String, icon: String) -> some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 12) {
             Image(systemName: icon)
-                .foregroundColor(Color("PrimaryRedColor"))
+                .font(.title2)
+                .foregroundColor(Color("AccentColor"))
             
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.subheadline)
+                    .fontWeight(.medium)
                     .foregroundColor(Color("TextColor"))
                 
                 Text("\(value)")
                     .font(.caption)
-                    .foregroundColor(Color("TextColor").opacity(0.7))
+                    .foregroundColor(Color("TextColor").opacity(0.6))
             }
             
             Spacer()
         }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 12)
-        .background(Color("SystemColor"))
-        .cornerRadius(10)
-        .frame(maxWidth: .infinity)
+        .padding()
+        .background(Color.white)
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
     }
 }
 

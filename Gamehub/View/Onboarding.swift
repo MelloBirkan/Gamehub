@@ -16,22 +16,18 @@ struct Onboarding: View {
     @State private var playerLooper: AVPlayerLooper?
     @State private var animateBackground = false
     
-    // Cores do tema
-    let accentColor = Color(red: 0.3, green: 0.7, blue: 1.0)
-    let secondaryColor = Color(red: 0.9, green: 0.4, blue: 1.0)
-    
     // Conteúdo do onboarding
     private let onboardingData = [
-        OnboardingItem(title: "Bem-vindo ao GameHub", description: "Sua central de jogos e comunidade gamer", systemImage: "gamecontroller.fill", color: .purple),
-        OnboardingItem(title: "Descubra Novos Jogos", description: "Explore uma vasta biblioteca de jogos classificados por gênero", systemImage: "magnifyingglass", color: .blue),
-        OnboardingItem(title: "Conecte-se com Amigos", description: "Jogue com amigos e participe de comunidades", systemImage: "person.2.fill", color: .pink)
+        OnboardingItem(title: "Bem-vindo ao GameHub", description: "Sua central de jogos e comunidade gamer", systemImage: "gamecontroller.fill", color: Color("WelcomePurpleColor")),
+        OnboardingItem(title: "Descubra Novos Jogos", description: "Explore uma vasta biblioteca de jogos classificados por gênero", systemImage: "magnifyingglass", color: Color("DiscoverBlueColor")),
+        OnboardingItem(title: "Conecte-se com Amigos", description: "Jogue com amigos e participe de comunidades", systemImage: "person.2.fill", color: Color("ConnectPinkColor"))
     ]
     
     var body: some View {
         ZStack {
             // Fundo escuro com gradiente animado
             LinearGradient(
-                gradient: Gradient(colors: [Color.black.opacity(0.8), Color(red: 0.1, green: 0.05, blue: 0.2)]),
+                gradient: Gradient(colors: [Color.black.opacity(0.8), Color("BackgroudnColor")]),
                 startPoint: animateBackground ? .topLeading : .bottomTrailing,
                 endPoint: animateBackground ? .bottomTrailing : .topLeading
             )
@@ -68,13 +64,13 @@ struct Onboarding: View {
                     .font(.system(size: 32, weight: .black, design: .rounded))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [accentColor, secondaryColor],
+                            colors: [Color("AccentColor"), Color("SecondaryPurpleColor")],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
                     )
                     .padding(.top, 20)
-                    .shadow(color: accentColor.opacity(0.5), radius: 10, x: 0, y: 0)
+                    .shadow(color: Color("AccentColor").opacity(0.5), radius: 10, x: 0, y: 0)
                 
                 // Conteúdo principal
                 TabView(selection: $currentTab) {
@@ -230,22 +226,34 @@ struct ParticleEffectView: View {
 struct VideoPlayerWithLoop: View {
     @State private var player: AVQueuePlayer?
     @State private var playerLooper: AVPlayerLooper?
+    @State private var isVideoAvailable = false
     
     var body: some View {
-        VideoPlayer(player: player)
-            .onAppear {
-                if let videoURL = Bundle.main.url(forResource: "gameVideo", withExtension: "mov") {
-                    let playerItem = AVPlayerItem(url: videoURL)
-                    self.player = AVQueuePlayer(playerItem: playerItem)
-                    self.playerLooper = AVPlayerLooper(player: player!, templateItem: playerItem)
-                    self.player?.play()
-                }
+        ZStack {
+            if isVideoAvailable {
+                VideoPlayer(player: player)
+            } else {
+                // Fallback quando o vídeo não está disponível
+                Color.black
             }
-            .onDisappear {
-                player?.pause()
-                playerLooper = nil
-                player = nil
+        }
+        .onAppear {
+            if let videoURL = Bundle.main.url(forResource: "gameVideo", withExtension: "mov") {
+                let playerItem = AVPlayerItem(url: videoURL)
+                self.player = AVQueuePlayer(playerItem: playerItem)
+                self.playerLooper = AVPlayerLooper(player: player!, templateItem: playerItem)
+                self.player?.play()
+                self.isVideoAvailable = true
+            } else {
+                print("Vídeo 'gameVideo.mov' não encontrado no bundle")
+                self.isVideoAvailable = false
             }
+        }
+        .onDisappear {
+            player?.pause()
+            playerLooper = nil
+            player = nil
+        }
     }
 }
 

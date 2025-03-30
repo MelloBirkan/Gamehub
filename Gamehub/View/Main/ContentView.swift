@@ -22,8 +22,8 @@ struct ContentView: View {
                 if gamesViewModel.isSearching {
                     Spacer()
                     ProgressView("Searching for games...")
-                        .tint(.secondaryRed)
-                        .foregroundStyle(.secondaryRed)
+                        .tint(Color("DiscoverBlueColor"))
+                        .foregroundStyle(Color("DiscoverBlueColor"))
                     Spacer()
                 } else {
                     ScrollView {
@@ -60,9 +60,9 @@ struct ContentView: View {
             Image(systemName: "magnifyingglass")
             
             TextField("", text: $query)
-                .tint(.secondaryRed)
+                .tint(Color("DiscoverBlueColor"))
                 .placeholder("Search for a game", when: query.isEmpty) {
-                    Text("Search for a game").foregroundStyle(.secondaryRed)
+                    Text("Search for a game").foregroundStyle(Color("DiscoverBlueColor"))
                 }
                 .onSubmit {
                     if !query.isEmpty {
@@ -94,14 +94,14 @@ struct ContentView: View {
                         .padding(3)
                         .background(
                             Circle()
-                                .fill(.secondaryRed)
+                                .fill(Color("WelcomePurpleColor"))
                         )
                 }
             }
         }
-        .foregroundStyle(.secondaryRed)
+        .foregroundStyle(Color("DiscoverBlueColor"))
         .padding(10)
-        .background(.primaryRed)
+        .background(Color("BackgroudnColor"))
         .clipShape(.rect(cornerRadius: 8))
         .padding(.horizontal)
     }

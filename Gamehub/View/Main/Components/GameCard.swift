@@ -59,7 +59,7 @@ struct GameCard: View {
             Text(game.name ?? "No name")
                 .lineLimit(1)
                 .font(.headline)
-                .foregroundStyle(.text)
+                .foregroundStyle(Color("TextColor"))
             
             Text(formattedReleaseDate)
                 .font(.caption)
@@ -67,7 +67,7 @@ struct GameCard: View {
             
             HStack {
                 Label((game.rating).description, systemImage: "star.fill")
-                    .foregroundStyle(.primaryRed)
+                    .foregroundStyle(Color("AccentColor"))
                     .font(.caption2)
                 
                 Spacer()
@@ -76,7 +76,7 @@ struct GameCard: View {
                     ForEach(game.platformSymbols, id: \.self) { symbol in
                         Image(systemName: symbol)
                             .font(.caption2)
-                            .foregroundStyle(Color.secondary)
+                            .foregroundStyle(Color("ConnectPinkColor"))
                     }
                 }
             }
