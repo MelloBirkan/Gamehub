@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Game: Decodable, Identifiable {
+struct Game: Decodable, Identifiable, Hashable {
     let id: Int?
     let slug: String?
     let name: String?
@@ -70,6 +70,14 @@ struct Game: Decodable, Identifiable {
         
         // Remove duplicates
         return Array(Set(symbols))
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+    
+    static func == (lhs: Game, rhs: Game) -> Bool {
+        lhs.id == rhs.id
     }
 }
 

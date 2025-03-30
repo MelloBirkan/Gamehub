@@ -13,6 +13,7 @@ class GamesViewModel {
     let service = DataService()
     var games = [Game]()
     var isSearching = false
+    var selectedGame: Game? = nil
     
     func fetchGames() {
         Task {
@@ -27,5 +28,13 @@ class GamesViewModel {
             games = await self.service.fetchGamesData(dates: nil, platforms: nil, search: query)
             isSearching = false
         }
+    }
+    
+    func selectGame(_ game: Game) {
+        selectedGame = game
+    }
+    
+    func clearSelectedGame() {
+        selectedGame = nil
     }
 }
